@@ -1,14 +1,14 @@
 const mongoose = require('mongoose')
 const Pusher = require("pusher");
 const pusher = new Pusher({
-    appId: "1418317",
-  key: "335b9707e790a4d59bbe",
-  secret: "2793f009078b6b695493",
-  cluster: "ap2",
-  useTLS: true
+    appId: process.env.appId,
+    key: process.env.key,
+    secret: process.env.secret,
+    cluster: process.env.cluster,
+    useTLS: process.env.useTLS
 });
 
-mongoose.connect(process.env.MONGO,{
+mongoose.connect(process.env.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
@@ -17,28 +17,49 @@ mongoose.connect(process.env.MONGO,{
     console.log(err)
 })
 const db = mongoose.connection
-// db.once('open', () => {
-//     console.log('db coonected again')
+db.once('open', () => {
+    console.log('db coonected again')
 
-//     const msgCollection = db.collection('postdatas');
-//     const changeStream = msgCollection.watch()
-//     changeStream.on('change', (change)=>{
-//         console.log(change)
-//         if(change.operationType==='update'){
-//             const msgdetail = change.updateDescription;
-//             pusher.trigger('messages','updated',{
-//                 msg: msgdetail.updatedFields
-//             })
+    const msgCollection = db.collection('postdatas');
+    const changeStream = msgCollection.watch()
+    changeStream.on('change', (change) => {
+        // console.log(change)
+        if (change.operationType === 'update') {
+            const msgdetail = change.updateDescription;
+            pusher.trigger('messages', 'updated', {
+                msg: msgdetail.updatedFields
+            })
 
-//         }if(change.operationType==='insert'){
-//             const msgdetail = change.fullDocument;
-//             pusher.trigger('username','posted',{
-//                 user:msgdetail.name
-//             })
-//         }
-//         else{ 
-//             console.log('error trigger')
-//         }
-//     })
+        } if (change.operationType === 'insert') {
+            const msgdetail = change.fullDocument;
+            pusher.trigger('username', 'posted', {
+                user: msgdetail.name
+            })
+        }
+        else {
+            console.log('error trigger')
+        }
+    })
 
-// })
+    const userCollection = db.collection('users');
+    const changeuserStream = userCollection.watch()
+    changeuserStream.on('change', (change) => {
+        console.log(change)
+        if (change.operationType === 'update') {
+            const msgdetail = change.updateDescription;
+            pusher.trigger('usermessages', 'userupdated', {
+                msg: msgdetail.updatedFields
+            })
+
+        } if (change.operationType === 'insert') {
+            const msgdetail = change.fullDocument;
+            pusher.trigger('usernames', 'userposted', {
+                user: msgdetail.name
+            })
+        }
+        else {
+            console.log('error trigger')
+        }
+    })
+
+})

@@ -9,13 +9,14 @@ const { async } = require('@firebase/util')
 const { find } = require('../models/user')
 
 
-//User Registration 
+
 const authen = getAuth(app)
+
+//User Registration 
 
 
 exports.Register = async (req, res) => {
     try {
-        // console.log('app',app)
         const { name, email, password, cpassword } = req.body
         if (!name) {
             return res.status(400).json('Fill the name field')
@@ -33,7 +34,6 @@ exports.Register = async (req, res) => {
         if (exuser) {
             return res.status(400).json('User with this email id already exists')
         }
-        // const hashpass = await bcrypt.hash(password, 10)
         if (password === cpassword) {
             const UserCredentialImpl = await createUserWithEmailAndPassword(authen, email, password)
             // res.json(UserCredentialImpl.user)
@@ -81,7 +81,7 @@ exports.Login = async (req, res) => {
         if (exuser) {
             const verify = await signInWithEmailAndPassword(authen, email, password)
             // res.json()
-            if (verify?.user.email) {
+            if (verify?.user.emailVerified) {
                 console.log('ex', exuser._id)
                 const token = jwt.sign({ id: exuser._id }, process.env.SEC_KEY)
                 console.log('token', token)
@@ -108,7 +108,7 @@ exports.Reset = async (req, res) => {
     try {
         console.log(authen)
         const reset = await sendPasswordResetEmail(authen, req.body.email)
-        res.json(reset)
+        res.json("Reset Link Send")
     } catch (error) {
 
     }
@@ -119,7 +119,7 @@ exports.Reset = async (req, res) => {
 
 exports.Loaduser = async (req, res, next) => {
     console.log(req.user)
-    const finduser = await User.findById(req.user)
+    const finduser = await User.findById(req.user).populate('following', 'name email profilePic following followers').populate('followers', 'name email following profilePic followers')
     res.status(200).json(finduser)
 
 }
@@ -356,7 +356,7 @@ exports.Comment = async (req, res) => {
 exports.Myfollowpost = async (req, res) => {
     try {
         const user = await User.findById(req.user)
-        const dataitem = await Postdata.find({ postedBy: { $in: user.following } }).populate('postedBy', ' name profilePic').populate("comments.postedBy", "name profilePic")
+        const dataitem = await Postdata.find({ postedBy: { $in: user.following } }).sort({"_id":-1}).populate('postedBy', ' name profilePic').populate("comments.postedBy", "name profilePic")
         res.status(200).json(dataitem)
     } catch (error) {
 

@@ -11,21 +11,21 @@ const { getAnalytics } = require("firebase/analytics");
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyD8JjD5XdEAhEmJtNza2CM_01gcj8RjaZY",
-    authDomain: "twitter-238a1.firebaseapp.com",
-    projectId: "twitter-238a1",
-    storageBucket: "twitter-238a1.appspot.com",
-    messagingSenderId: "897548042095",
-    appId: "1:897548042095:web:4bc5d577fc3c52afc7729a",
-    measurementId: "G-MS0EHN344E"
+  apiKey: process.env.apiKey,
+  authDomain: process.env.apiKey,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);
 module.exports = app
 
 
 
 // export const provider = new GoogleAuthProvider()
 
-// const analytics = getAnalytics(app);

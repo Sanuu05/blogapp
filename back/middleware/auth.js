@@ -11,7 +11,7 @@ const auth = (req, res, next)=>{
             })
         }
         const verify = jwt.verify(token,process.env.SEC_KEY)
-        console.log("vvv",verify)
+        // console.log("vvv",verify)
         if(!verify){
             return res.status(400).json({
                 msg:"verification failed" 
